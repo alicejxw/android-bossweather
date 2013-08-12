@@ -1,7 +1,10 @@
 package com.michael.feng.bossweather;
 
+import android.content.Context;
+import android.net.*;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,14 +38,13 @@ public class MainActivity extends SherlockActivity implements YahooWeatherInfoLi
         // Display prompt info for loading
         mCardView = (CardUI) findViewById(R.id.cardsview);
         mCardView.setSwipeable(false);
-        MyCard loadCard = new MyCard("Getting your location...", "Loading...", R.drawable.url1);
+        MyCard loadCard = new MyCard("Getting your location...", "\nLoading...", R.drawable.url1);
         mCardView.addCard(loadCard, true);
 
-        Log.d("YWeatherGetter4a", "onCreate");
-        
         YahooWeatherUtils yahooWeatherUtils = YahooWeatherUtils.getInstance();
         yahooWeatherUtils.queryYahooWeather(getApplicationContext(), "Shanghai", this);
-        
+
+
     }
 
 	@Override

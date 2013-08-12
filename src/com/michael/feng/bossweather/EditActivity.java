@@ -1,6 +1,5 @@
 package com.michael.feng.bossweather;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -10,16 +9,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -27,16 +21,19 @@ import android.widget.TextView;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import com.fima.cardsui.views.CardUI;
+import com.michael.feng.model.City;
+import com.michael.feng.tools.CityDAO;
 
 public class EditActivity extends SherlockActivity {
 
 	private ActionBar ab; 
-	private List cityNames;
 	private ListView cityListView;
 	private ListViewAdapter listViewAdapter;
+	private boolean inAction = false;
+	
+	private CityDAO cityDAO;
+	private List<City> cityList;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,17 +41,22 @@ public class EditActivity extends SherlockActivity {
         setContentView(R.layout.activity_edit);
         ab = getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true);
+        ab.setTitle("我的城市");
         
-        cityNames = new ArrayList();
-        cityNames.add("Shanghai");
-        cityNames.add("Hangzhou");
-        cityNames.add("Beijing");
-        cityNames.add("Chongqin");
-        
-        listViewAdapter = new ListViewAdapter(this);
-        cityListView = (ListView) findViewById(android.R.id.list);
-        cityListView.setAdapter(listViewAdapter);
+        listMyCities();
     }
+    
+    // Get my cities from DB where status = 1
+ 	public void listMyCities() {
+ 		cityDAO = new CityDAO(this);
+ 		cityDAO.open();
+ 		cityList = (List<City>) cityDAO.getMyCities();
+ 		cityDAO.close();
+ 		
+ 		listViewAdapter = new ListViewAdapter(this);
+ 		cityListView = (ListView) findViewById(android.R.id.list);
+ 		cityListView.setAdapter(listViewAdapter);
+ 	}
 
 	protected void refresh(String str) {
 //		outputData = insertData.queryData(str);
@@ -117,7 +119,7 @@ public class EditActivity extends SherlockActivity {
 		}
 
 		public int getCount() {
-			return cityNames.size();
+			return cityList.size();
 		}
 
 		public Object getItem(int position) {
@@ -143,12 +145,13 @@ public class EditActivity extends SherlockActivity {
 			} else {
 				holder = (ListContent) view.getTag();
 			}
-			String cityName = (String) cityNames.get(position);
+			String cityName = cityList.get(position).getName();
 			holder.cityName.setText(cityName);
 			holder.optImg.setOnClickListener(operatetListener);
 			holder.deleteImg.setOnClickListener(deleteImgListener);
 			return view;
 		}
+		
 	}
 
 	static class ListContent {
@@ -165,7 +168,8 @@ public class EditActivity extends SherlockActivity {
 			ImageView optImg = (ImageView) cityListView.getChildAt(position).findViewById(R.id.optImg);
 			
 			TextView optStatus = (TextView) cityListView.getChildAt(position).findViewById(R.id.optStatus);
-			if("0".equals(optStatus.getText())) {
+			if("0".equals(optStatus.getText()) && inAction == false) {
+				inAction = true;
 				Bitmap img = BitmapFactory.decodeResource(getResources(), R.drawable.deleteicon);
 				Matrix matrix = new Matrix();
 				matrix.postRotate(90);
@@ -173,7 +177,8 @@ public class EditActivity extends SherlockActivity {
 				optImg.setImageBitmap(rotated);
 				optStatus.setText("1");
 				deleteImg.setVisibility(View.VISIBLE);
-			} else {
+			} else if("1".equals(optStatus.getText()) && inAction == true){
+				inAction = false;
 				Bitmap img = BitmapFactory.decodeResource(getResources(), R.drawable.deleteicon);
 				Matrix matrix = new Matrix();
 				matrix.postRotate(180);
@@ -181,6 +186,20 @@ public class EditActivity extends SherlockActivity {
 				optImg.setImageBitmap(rotated);
 				optStatus.setText("0");
 				deleteImg.setVisibility(View.GONE);
+			} else {
+				inAction = false;
+				for(int i = 0; i<cityListView.getCount(); i++) {
+					deleteImg = (ImageView) cityListView.getChildAt(i).findViewById(R.id.deleteImg);
+					optImg    = (ImageView) cityListView.getChildAt(i).findViewById(R.id.optImg);
+					optStatus = (TextView) cityListView.getChildAt(i).findViewById(R.id.optStatus);
+					deleteImg.setVisibility(View.GONE);
+					Bitmap img = BitmapFactory.decodeResource(getResources(), R.drawable.deleteicon);
+					Matrix matrix = new Matrix();
+					matrix.postRotate(180);
+					Bitmap rotated = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
+					optImg.setImageBitmap(rotated);
+					optStatus.setText("0");
+				}
 			}
 			
 		}
@@ -205,7 +224,7 @@ public class EditActivity extends SherlockActivity {
 			optStatus.setText("0");
 			
 			// Remove item and refresh list view
-			cityNames.remove(position);
+			cityList.remove(position);
 			listViewAdapter.notifyDataSetChanged();
 		}
 	};

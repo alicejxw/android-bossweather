@@ -1156,7 +1156,7 @@ containing a value of this type.
         public static final int cancelBtn=0x7f040035;
         public static final int cardContent=0x7f040041;
         public static final int cardsview=0x7f040037;
-        public static final int cityName=0x7f040047;
+        public static final int cityName=0x7f040045;
         public static final int deleteImg=0x7f040048;
         public static final int description=0x7f04003a;
         public static final int disableHome=0x7f040009;
@@ -1172,8 +1172,8 @@ containing a value of this type.
         public static final int msgFrame=0x7f040044;
         public static final int newitem=0x7f040049;
         public static final int normal=0x7f040001;
-        public static final int optImg=0x7f040045;
-        public static final int optStatus=0x7f040046;
+        public static final int optImg=0x7f040046;
+        public static final int optStatus=0x7f040047;
         public static final int placeholder=0x7f04003f;
         public static final int shareItem=0x7f04004b;
         public static final int showCustom=0x7f040008;
@@ -1227,9 +1227,10 @@ containing a value of this type.
         public static final int item_card_empty_first=0x7f03001e;
         public static final int item_card_empty_last=0x7f03001f;
         public static final int item_stack=0x7f030020;
-        public static final int listitem_edit=0x7f030021;
-        public static final int sherlock_spinner_dropdown_item=0x7f030022;
-        public static final int sherlock_spinner_item=0x7f030023;
+        public static final int listitem_add=0x7f030021;
+        public static final int listitem_edit=0x7f030022;
+        public static final int sherlock_spinner_dropdown_item=0x7f030023;
+        public static final int sherlock_spinner_item=0x7f030024;
     }
     public static final class menu {
         public static final int editactivity_itemlist=0x7f0b0000;

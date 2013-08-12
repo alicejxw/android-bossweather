@@ -14,7 +14,7 @@
         android:layout_marginTop="7dp"
         android:layout_toLeftOf="@+id/cancelBtn"
         android:ems="10"
-        android:hint="城市">
+        android:hint="城市（如：HZ，SH)">
         <requestFocus />
     </EditText>
 

@@ -485,7 +485,7 @@ int id border 0x7f040034
 int id cancelBtn 0x7f040035
 int id cardContent 0x7f040041
 int id cardsview 0x7f040037
-int id cityName 0x7f040047
+int id cityName 0x7f040045
 int id deleteImg 0x7f040048
 int id description 0x7f04003a
 int id disableHome 0x7f040009
@@ -501,8 +501,8 @@ int id menu_item_action_provider_overflow 0x7f04004d
 int id msgFrame 0x7f040044
 int id newitem 0x7f040049
 int id normal 0x7f040001
-int id optImg 0x7f040045
-int id optStatus 0x7f040046
+int id optImg 0x7f040046
+int id optStatus 0x7f040047
 int id placeholder 0x7f04003f
 int id shareItem 0x7f04004b
 int id showCustom 0x7f040008
@@ -552,9 +552,10 @@ int layout item_card_empty 0x7f03001d
 int layout item_card_empty_first 0x7f03001e
 int layout item_card_empty_last 0x7f03001f
 int layout item_stack 0x7f030020
-int layout listitem_edit 0x7f030021
-int layout sherlock_spinner_dropdown_item 0x7f030022
-int layout sherlock_spinner_item 0x7f030023
+int layout listitem_add 0x7f030021
+int layout listitem_edit 0x7f030022
+int layout sherlock_spinner_dropdown_item 0x7f030023
+int layout sherlock_spinner_item 0x7f030024
 int menu editactivity_itemlist 0x7f0b0000
 int menu mainactivity_itemlist 0x7f0b0001
 int menu settings_action_provider 0x7f0b0002

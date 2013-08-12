@@ -18,7 +18,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -26,17 +25,19 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.fima.cardsui.views.CardUI;
+import com.michael.feng.model.City;
+import com.michael.feng.tools.CityDAO;
 
 public class AddActivity extends SherlockActivity {
 
-	private CardUI mCardView; 
 	private ActionBar ab; 
 	private EditText inputETxt;
 	private Button cancelBtn;
-	private List cityNames;
+	private List<City> cityList;
 	private ListView cityListView;
 	private ListViewAdapter listViewAdapter;
+	private List<City> queryResult;
+	private CityDAO cityDAO;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,6 +45,18 @@ public class AddActivity extends SherlockActivity {
         setContentView(R.layout.activity_add);
         ab = getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true);
+        ab.setTitle("添加城市");
+        
+        cityList = new ArrayList<City>();
+        cityDAO = new CityDAO(this);
+        cityListView = (ListView) findViewById(android.R.id.list);
+        listViewAdapter = new ListViewAdapter(this);
+        cityListView.setAdapter(listViewAdapter);
+        
+        //cityList.add(new City("Shanghai", "Shanghai", "SH", "1"));
+        //cityList.add(new City("Hangzhou", "Zhejiang", "HZ", "1"));
+        //cityList.add(new City("Beijing", "Beijing", "BJ", "1"));
+        //cityList.add(new City("Chongqin", "Sichuan", "CQ", "1"));
         
         cancelBtn = (Button)   findViewById(R.id.cancelBtn);
         cancelBtn.setOnClickListener(new OnClickListener() {
@@ -56,36 +69,38 @@ public class AddActivity extends SherlockActivity {
         inputETxt.addTextChangedListener(new TextWatcher() {
 
 			public void afterTextChanged(Editable arg0) {
-				
+				if(null == inputETxt.getText() || "".equals(inputETxt.getText().toString().trim())) {
+					cleanList();
+				}
 			}
 
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-				
 			}
 
 			public void onTextChanged(CharSequence s, int start, int count, int after) {
 				String str = s.toString();
 			    Log.d("ontextchanged", str);
-			    refresh(str);
+			    if(!"".equals(str.trim())) {
+			    	refreshList(cityDAO, str);
+			    }
 			}
         });
         
-        cityNames = new ArrayList();
-        cityNames.add("Shanghai");
-        cityNames.add("Hangzhou");
-        cityNames.add("Beijing");
-        cityNames.add("Chongqin");
-        
-        listViewAdapter = new ListViewAdapter(this);
-        cityListView = (ListView) findViewById(android.R.id.list);
-        cityListView.setAdapter(listViewAdapter);
     }
 
-	protected void refresh(String str) {
-//		outputData = insertData.queryData(str);
-//		orderListListAdapter = new OrderListListAdapter(this, orderData);
-//		orderlistlistView.setAdapter(orderListListAdapter);
-//		orderListListAdapter.notifyDataSetChanged();
+	protected void refreshList(CityDAO cityDAO, String str) {
+		cityDAO.open();
+		cityList = cityDAO.queryCityByCode(str);
+		cityDAO.close();
+
+		listViewAdapter.notifyDataSetChanged();
+		cityListView.setAdapter(listViewAdapter);
+	}
+	
+	protected void cleanList() {
+		cityList.clear();
+		listViewAdapter.notifyDataSetChanged();
+        cityListView.setAdapter(listViewAdapter);
 	}
 
 	class LoadWebImagesTask extends AsyncTask<String, Void, Bitmap[]> {
@@ -125,7 +140,7 @@ public class AddActivity extends SherlockActivity {
 	public class ListViewAdapter extends BaseAdapter {
 
 		private LayoutInflater mInflater;
-		private int listLayout = R.layout.listitem_edit;
+		private int listLayout = R.layout.listitem_add;
 
 		public ListViewAdapter(Context con) {
 			mInflater = LayoutInflater.from(con);
@@ -136,7 +151,7 @@ public class AddActivity extends SherlockActivity {
 		}
 
 		public int getCount() {
-			return cityNames.size();
+			return cityList.size();
 		}
 
 		public Object getItem(int position) {
@@ -154,51 +169,40 @@ public class AddActivity extends SherlockActivity {
 			if (view == null) {
 				view = mInflater.inflate(listLayout, null);
 				holder = new ListContent();
-				holder.optImg = (ImageView) view.findViewById(R.id.optImg);
 				holder.cityName = (TextView) view.findViewById(R.id.cityName);
-				holder.deleteImg = (ImageView) view.findViewById(R.id.deleteImg);
 				view.setTag(holder);
 			} else {
 				holder = (ListContent) view.getTag();
 			}
-			String cityName = (String) cityNames.get(position);
+			City city = cityList.get(position);
+			String cityName = city.getName() + "，" + city.getProvince();
 			holder.cityName.setText(cityName);
-			
-			holder.optImg.setOnClickListener(operatetListener);
-			holder.deleteImg.setOnClickListener(deleteImgListener);
+			holder.cityName.setOnClickListener(cityNameListener);
 			return view;
 		}
 	}
 
 	static class ListContent {
-		ImageView optImg;
 		TextView cityName;
-		ImageView deleteImg;
 	}
 
-	public OnClickListener operatetListener = new OnClickListener() {
+	public OnClickListener cityNameListener = new OnClickListener() {
 		public void onClick(View view) {
-			//int position = countryListView.getPositionForView((View) view.getParent());
-			// Put contact number into intent start Detail Activity
-			Intent intent = new Intent("com.michael.feng.textlater.DetailActivity");
-			//String countryName = countryNames.get(position).getTextContact();
-			//intent.putExtra("textContact", countryName);
+			int position = cityListView.getPositionForView((View) view.getParent());
+			City city = cityList.get(position);
+			
+			// Update city status to 1 - means add to my city list
+			cityDAO.open();
+			cityDAO.updateCityStatus(city, "1");
+			cityDAO.close();
+			
+			finish();
+			Intent intent = new Intent();
+			intent.setClass(AddActivity.this, EditActivity.class);
 			startActivity(intent);
 		}
 	};
 
-	public OnClickListener deleteImgListener = new OnClickListener() {
-		public void onClick(View view) {
-			int position = cityListView.getPositionForView((View) view.getParent());
-
-			// Delete message by contact
-//			String textContact = messageList.get(position).getTextContact();
-//			deleteMessages(textContact);
-//			messageList.remove(position);
-//			listViewAdapter.notifyDataSetChanged();
-		}
-	};
-	
 }
 
 
