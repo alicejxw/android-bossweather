@@ -243,6 +243,7 @@ public class YahooWeatherUtils {
 				String weatherString = getWeatherString(mContext, woeidNumber);
 				Document weatherDoc = convertStringToDocument(mContext, weatherString);
 				WeatherInfo weatherInfo = parseWeatherInfo(mContext, weatherDoc);
+				weatherInfo.setLocationCity(cityName[0]);
 				return weatherInfo;
 			} else {
 				return null;

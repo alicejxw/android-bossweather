@@ -16,7 +16,11 @@
 
 package com.michael.feng.tools;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import android.content.ContentValues;
@@ -56,6 +60,7 @@ public class CityDAO {
 		values.put(SQLiteHelper.COL_PROVINCE, city.getProvince());
 		values.put(SQLiteHelper.COL_CODE,     city.getCode());
 		values.put(SQLiteHelper.COL_STATUS,   city.getStatus());
+		values.put(SQLiteHelper.COL_UPDATED,   city.getUpdated().toString());
 		long insertId = database.insert(SQLiteHelper.TB_NAME, null, values);
 		Cursor cursor = database.query(SQLiteHelper.TB_NAME, allColumns, SQLiteHelper.COL_ID
 				+ " = " + insertId, null, null, null, null);
@@ -67,7 +72,7 @@ public class CityDAO {
 	
 	public List<City> queryCityByCode(String code) {
 		List<City> cityList = new ArrayList<City>();
-		String querySql = "SELECT _id, name, province, code, status FROM cities WHERE code LIKE '%" + code + "%' ORDER BY _id DESC";
+		String querySql = "SELECT _id, name, province, code, status, updated FROM cities WHERE code LIKE '%" + code + "%' ORDER BY updated ASC";
 		Cursor cursor = database.rawQuery(querySql, null);
 		cursor.moveToFirst();
 		while (!cursor.isAfterLast()) {
@@ -82,7 +87,7 @@ public class CityDAO {
 	
 	public List<City> queryCityByName(String name) {
 		List<City> cityList = new ArrayList<City>();
-		String querySql = "SELECT _id, name, province, code, status FROM cities WHERE name LIKE '%" + name + "%' ORDER BY _id DESC";
+		String querySql = "SELECT _id, name, province, code, status, updated FROM cities WHERE name LIKE '%" + name + "%' ORDER BY updated ASC";
 		Cursor cursor = database.rawQuery(querySql, null);
 		cursor.moveToFirst();
 		while (!cursor.isAfterLast()) {
@@ -96,7 +101,7 @@ public class CityDAO {
 	
 	public List<City> getMyCities() {
 		List<City> cityList = new ArrayList<City>();
-		String querySql = "SELECT _id, name, province, code, status FROM cities WHERE status = 1 ORDER BY _id DESC";
+		String querySql = "SELECT _id, name, province, code, status, updated FROM cities WHERE status = 1 ORDER BY updated ASC";
 		Cursor cursor = database.rawQuery(querySql, null);
 		cursor.moveToFirst();
 		while (!cursor.isAfterLast()) {
@@ -111,8 +116,11 @@ public class CityDAO {
 	public void updateCityStatus(City city, String status) {
 		ContentValues cv = new ContentValues();
 		cv.put("status", status);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String date = sdf.format(new Date());
+		cv.put("updated", date);
 		database.update(SQLiteHelper.TB_NAME, cv, 
-				SQLiteHelper.COL_NAME     + " = '" + city.getName() +"' and "+ 
+				SQLiteHelper.COL_NAME     + " = '" + city.getName() +     "' and "+ 
 				SQLiteHelper.COL_PROVINCE + " = '" + city.getProvince() + "'", null);
 	}
 
@@ -123,6 +131,16 @@ public class CityDAO {
 		city.setProvince(cursor.getString(2));
 		city.setCode(cursor.getString(3));
 		city.setStatus(cursor.getString(4));
+		
+		// Date format in DB convert into Java Calendar
+	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    Date cal = null;
+	    try {
+	    	cal= sdf.parse(cursor.getString(5));
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		city.setUpdated(cal);
 		return city;
 	}
 	

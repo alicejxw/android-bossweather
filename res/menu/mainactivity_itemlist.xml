@@ -29,12 +29,13 @@
         android:title="edititem"
         android:titleCondensed="edititem">
     </item>
+    <!-- 
     <item
         android:id="@+id/shareItem"
         android:icon="@drawable/shareitem"
         android:showAsAction="always"
         android:title="share"
         android:titleCondensed="share">
-    </item>
+    </item> -->
 
 </menu>

@@ -16,12 +16,15 @@
 
 package com.michael.feng.model;
 
+import java.util.Date;
+
 public class City {
 	private long id;
 	private String name;
 	private String province;
 	private String code;
 	private String status;
+	private Date updated;
 	
 	public City() {
 		super();
@@ -72,6 +75,14 @@ public class City {
 
 	public void setProvince(String province) {
 		this.province = province;
+	}
+	
+	public Date getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(Date updated) {
+		this.updated = updated;
 	}
 
 }

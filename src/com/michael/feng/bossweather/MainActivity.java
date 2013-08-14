@@ -1,10 +1,9 @@
 package com.michael.feng.bossweather;
 
-import android.content.Context;
-import android.net.*;
+import java.util.List;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +18,8 @@ import com.actionbarsherlock.view.MenuItem;
 import com.fima.cardsui.objects.Card;
 import com.fima.cardsui.objects.Card.OnCardSwiped;
 import com.fima.cardsui.views.CardUI;
+import com.michael.feng.model.City;
+import com.michael.feng.tools.CityDAO;
 import com.michael.feng.tools.ConvertUtil;
 import com.michael.feng.tools.MyCard;
 import com.michael.feng.utils.YahooWeather4a.WeatherInfo;
@@ -28,7 +29,10 @@ import com.michael.feng.utils.YahooWeather4a.YahooWeatherUtils;
 public class MainActivity extends SherlockActivity implements YahooWeatherInfoListener {
 
 	private String curWeather = ""; 
+	private String curCity = "";
 	private CardUI mCardView; 
+	private List<City> myCityList;
+	private CityDAO cityDAO;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,38 +42,44 @@ public class MainActivity extends SherlockActivity implements YahooWeatherInfoLi
         // Display prompt info for loading
         mCardView = (CardUI) findViewById(R.id.cardsview);
         mCardView.setSwipeable(false);
-        MyCard loadCard = new MyCard("Getting your location...", "\nLoading...", R.drawable.url1);
+        MyCard loadCard = new MyCard("当前还未添加任何城市", "\n加号：添加一个城市\n\n铅笔：编辑已有城市", R.drawable.sunny);
         mCardView.addCard(loadCard, true);
-
+        
+        cityDAO = new CityDAO(this);
+        cityDAO.open();
+        myCityList = cityDAO.getMyCities();
+        cityDAO.close();
+        if(myCityList.isEmpty()) {
+        	// Then get location and show
+        	//YahooWeatherUtils yahooWeatherUtils = YahooWeatherUtils.getInstance();
+            //yahooWeatherUtils.queryYahooWeather(getApplicationContext(), "Shanghai", this);
+            return;
+        } 
+        
+        mCardView.clearCards();
         YahooWeatherUtils yahooWeatherUtils = YahooWeatherUtils.getInstance();
-        yahooWeatherUtils.queryYahooWeather(getApplicationContext(), "Shanghai", this);
-
-
+        for(City city: myCityList) {
+        	// init CardView
+            yahooWeatherUtils.queryYahooWeather(getApplicationContext(), city.getName(), this);
+        }
+        
     }
 
 	@Override
 	public void gotWeatherInfo(WeatherInfo weatherInfo) {
         if(weatherInfo != null) {
-        	//TextView tv = (TextView) findViewById(R.id.textview_title);
-			//tv.setText(weatherInfo.getTitle() + "\n"
-			//		+ weatherInfo.getLocationCity() + ", "
-			//		+ weatherInfo.getLocationCountry());
-			//tvWeather0 = (TextView) findViewById(R.id.textview_weather_info_0);
-			curWeather += 	   ConvertUtil.dateToLocal(weatherInfo.getCurrentConditionDate()) + "\n\n" +
-						       + weatherInfo.getCurrentTempC() + "℃，  " +  ConvertUtil.weatherToLocal(weatherInfo.getCurrentText()) + "\n\n" +
-						       "明天: " + weatherInfo.getForecast1TempLowC()  + "~" + weatherInfo.getForecast1TempHighC() + "℃， " + ConvertUtil.weatherToLocal(weatherInfo.getForecast1Text()) + "\n"  +
-						       "后天: " + weatherInfo.getForecast2TempHighC() + "~" + weatherInfo.getForecast2TempHighC() + "℃， " + ConvertUtil.weatherToLocal(weatherInfo.getForecast2Text());
-			
-			//ivWeather0 = (ImageView) findViewById(R.id.imageview_weather_info_0);
-			
-			LoadWebImagesTask task = new LoadWebImagesTask();
-			task.execute(weatherInfo.getCurrentConditionIconURL());
-			
-			// init CardView
-			mCardView.clearCards();
-			
-			MyCard shCard = new MyCard("Shanghai", curWeather, R.drawable.url1);
-	        mCardView.addCardToLastStack(shCard);
+        	curWeather = "";
+        	String localWeatherDate  = ConvertUtil.dateToLocal();//weatherInfo.getCurrentConditionDate());
+        	String localWeatherText  = ConvertUtil.weatherToLocal(weatherInfo.getCurrentText());
+        	String localWeatherFore1 = ConvertUtil.weatherToLocal(weatherInfo.getForecast1Text());
+        	String localWeatherFore2 = ConvertUtil.weatherToLocal(weatherInfo.getForecast2Text());
+			curWeather += localWeatherDate + "\n\n" +
+						  weatherInfo.getCurrentTempC() + "℃，  " +  localWeatherText + "\n\n" +
+						  "明天: " + weatherInfo.getForecast1TempLowC()  + "~" + weatherInfo.getForecast1TempHighC() + "℃， " + localWeatherFore1 + "\n"  +
+						  "后天: " + weatherInfo.getForecast2TempHighC() + "~" + weatherInfo.getForecast2TempHighC() + "℃， " + localWeatherFore2;
+			final int curWeatherIcon = ConvertUtil.getIconByWeather(localWeatherText);
+			MyCard shCard = new MyCard(weatherInfo.getLocationCity(), curWeather, curWeatherIcon);
+	        mCardView.addCard(shCard);
 	        shCard.setOnCardSwipedListener(new OnCardSwiped() {
 				public void onCardSwiped(Card card, View layout) {
 					Log.d("card swipe","swiped");
@@ -80,17 +90,10 @@ public class MainActivity extends SherlockActivity implements YahooWeatherInfoLi
 					Log.d("card click","click");					
 				}
 	        });
-
-	        MyCard hzCard = new MyCard("Hangzhou", "Hi Feng", R.drawable.url2);
-	        mCardView.addCard(hzCard);
-
-	        MyCard bjCard = new MyCard("Beijing", "BEIJING, BEIJING", R.drawable.url3);
-	        mCardView.addCard(bjCard);
-	        
-	        MyCard cqCard = new MyCard("Chongqin", "PAULGEV5", R.drawable.url1);
-	        mCardView.addCard(cqCard);
-
 	        mCardView.refresh();
+	        
+			//LoadWebImagesTask task = new LoadWebImagesTask();
+			//task.execute(weatherInfo.getCurrentConditionIconURL());
         } else {
         	Toast.makeText(getApplicationContext(), "Sorry, no result returned", Toast.LENGTH_SHORT).show();
         }
@@ -128,9 +131,9 @@ public class MainActivity extends SherlockActivity implements YahooWeatherInfoLi
         	intent.setClass(MainActivity.this, EditActivity.class);
         	startActivity(intent);
             break; 
-        case R.id.shareItem:
-            Toast.makeText(this, "share", Toast.LENGTH_SHORT).show();
-            break;
+//        case R.id.shareItem:
+//            Toast.makeText(this, "share", Toast.LENGTH_SHORT).show();
+//            break;
         case R.id.newitem:
         	Intent addIntent = new Intent();
         	addIntent.setClass(MainActivity.this, AddActivity.class);

@@ -1,5 +1,6 @@
 package com.michael.feng.bossweather;
 
+import java.util.Date;
 import java.util.List;
 
 import android.content.Context;
@@ -222,6 +223,12 @@ public class EditActivity extends SherlockActivity {
 			Bitmap rotated = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
 			optImg.setImageBitmap(rotated);
 			optStatus.setText("0");
+			City city = cityList.get(position);
+			
+			// Update DB 
+			cityDAO.open();
+			cityDAO.updateCityStatus(city, "0");
+			cityDAO.close();
 			
 			// Remove item and refresh list view
 			cityList.remove(position);

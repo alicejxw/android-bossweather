@@ -196,7 +196,7 @@ public final class R {
 		public static final int card_background = 0x7f020075;
 		public static final int card_background_shadow = 0x7f020076;
 		public static final int card_shadow = 0x7f020077;
-		public static final int top_shadow = 0x7f02007f;
+		public static final int top_shadow = 0x7f02008b;
 	}
 	public static final class id {
 		public static final int ScrollView1 = 0x7f04003d;
